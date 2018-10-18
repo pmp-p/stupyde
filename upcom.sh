@@ -1,4 +1,5 @@
 #!/bin/bash
+
 DEFAULT_WORKDIR="./esp8266"
 DEFAULT_AMPY_BAUD=115200
 DEFAULT_AIO_EXIT=0.01
@@ -24,11 +25,10 @@ if [[ $# -lt 1 ]]; then
     exit
 fi
 
-
+LTP=$(python3.7 -u -B -c "import time;tm=time.gmtime();tm = tm[0:3] + (0,) + tm[3:6] + (0,);print(tm)")
 # pausing asyncio loop on the board to get exclusive repl
 cat >> $1 <<END
-use.aio.__class__.paused=True
-
+use.aio.__class__.paused=True;__import__('machine').RTC().datetime(${LTP})
 END
 
 # adjust if you have a long exit loop
@@ -51,7 +51,7 @@ port="$1"; shift
 
 # Set up serial port, append all remaining parameters from command line
 #stty -F "$port" raw -echo "$@"
-stty -F "$port" raw -echo 115200 "$@"
+stty -F "$port" raw -echo $AMPY_BAUD "$@"
 
 # Set current terminal to pass through everything except Ctrl+Q
 # * "quit undef susp undef" will disable Ctrl+\ and Ctrl+Z handling
