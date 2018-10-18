@@ -17,3 +17,5 @@ fixme('micropython')
 fixme('machine')
 
 fixme('contextlib')
+
+fixme('contextvars')

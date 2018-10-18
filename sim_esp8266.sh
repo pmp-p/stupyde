@@ -22,7 +22,7 @@ echo Compiler : ${MPY}
 
 ( sleep 3 && pidof micropython >>/tmp/log) &
 clear > /tmp/log
-${UPY} -X heapsize=128K -i $STUD/sim_esp8266.py "$@" 2>>/tmp/log
+${UPY} -X heapsize=107000 -i $STUD/sim_esp8266.py "$@" 2>>/tmp/log
 python3.7 -u -B <<END
 import sys;
 sys.stdout.write( chr(0x1b)+"[?1003l")

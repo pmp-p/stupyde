@@ -1,5 +1,5 @@
 #
-print('NB: this module',__name__,'requires the scheduler repl patch for unix port to be compiled in',file=sys.stderr)
+print('NB: this module [',__name__,'] requires the scheduler repl patch for unix port to be compiled in',file=sys.stderr)
 #
 import micropython
 self = micropython

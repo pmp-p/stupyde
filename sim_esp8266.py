@@ -6,6 +6,8 @@ import os as os
 
 import ujson as json
 
+builtins.sys = sys
+
 import stupyde.fixes
 
 class config:
@@ -69,21 +71,10 @@ with dlopen('k') as klib:
 
 
 
-
-
-def Hi(arg):
-    print("Hello repl", file=sys.stderr)
-    print("Hello repl", file=sys.stdout)
-
-
-
-micropython.schedule(Hi,1)
-
-
 #main.py
 
 if use.IP[-1]=='0':
-    __file__ = 'repl.py'
+    __file__ = 'assets/repl.py'
     with open(__file__,'rb') as f:
         __code__ = f.read()
 else:
