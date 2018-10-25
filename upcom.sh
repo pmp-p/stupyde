@@ -25,14 +25,14 @@ if [[ $# -lt 1 ]]; then
     exit
 fi
 
-LTP=$(python3.7 -u -B -c "import time;tm=time.gmtime();tm = tm[0:3] + (0,) + tm[3:6] + (0,);print(tm)")
+#LTP=$(python3.7 -u -B -c "import time;tm=time.gmtime();tm = tm[0:3] + (0,) + tm[3:6] + (0,);print(tm)")
 # pausing asyncio loop on the board to get exclusive repl
-cat >> $1 <<END
-use.aio.__class__.paused=True;__import__('machine').RTC().datetime(${LTP})
-END
+#cat >> $1 <<END
+#use.aio.__class__.paused=True;__import__('machine').RTC().datetime(${LTP})
+#END
 
 # adjust if you have a long exit loop
-sleep $AIO_EXIT
+#sleep $AIO_EXIT
 
 PYTHONPATH=$(dirname "$(realpath $0)"):$PYTHONPATH python3.7 -u -B -mstupyde.upcom
 
