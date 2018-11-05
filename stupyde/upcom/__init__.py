@@ -47,12 +47,12 @@ def run(port,code, popen=True):
 
 
 
-def cp(port,args_filename, args_destination, opts):
+def cp(args_filename, args_destination, **kw):
     from serial import Serial
     from zlib import compress
-    with Serial(port, 115200) as esp:
+    with Serial( kw.get('port'), 115200) as esp:
 
-        if '-v' in opts:
+        if '-v' in kw:
             print(args_filename,' => ',args_destination)
 
         esp.write( b'\x01' )
@@ -64,12 +64,19 @@ def cp(port,args_filename, args_destination, opts):
 from uzlib import decompress
 with open('%s', 'wb') as target_file:
     target_file.write(decompress(data))
+print("\x06")
 ''' % args_destination ,'latin1') )
         esp.write( b'\x04' )
         esp.write( b'\x02' )
         esp.flush()
-        Time.sleep(0.1)
-
+        while True:
+            incoming = esp.read(esp.in_waiting).decode('utf-8')
+            if incoming:
+                if incoming.count( chr(6) ):
+                    break
+            else:
+                Time.sleep(0.001)
+        esp.reset_input_buffer()
 
 
 def TMP(name):
@@ -137,23 +144,20 @@ else:
                 if l.startswith("~ "):
                     print('\t',l )
                     updates.append(SRC + l.strip("~ "))
-#                else:
-#                    print(l)
-#            print('wip')
 
             Time.sleep(0.8)
             print()
-            print('syncing files ...')
+            print('Syncing files ...')
             for upd in updates:
                 dst = upd.rsplit( SRC, 1)[-1]
+                cp(upd,dst,**{ 'port':port, '-v': True } )
 
-                cp(port,upd,dst,('-v',) )
+                #FIXME: wait ack from board like for run+popen
                 Time.sleep(0.1)
 
             [ run(port, "__import__('machine').reset()" , popen=False) ]
 
         else:
-
             for l in os.popen("ampy run %s" % RUN_SCRIPT):
                 l = l.strip()
                 if l.startswith("~ "):

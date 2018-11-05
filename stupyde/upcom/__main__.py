@@ -17,9 +17,10 @@ tm = tm[0:3] + (0,) + tm[3:6] + (0,)
 
 
 code="""
+__import__('machine').RTC().datetime({})
 try:
     use.aio.__class__.paused=True
-    __import__('machine').RTC().datetime({})
+    
 except:
     pass
 print("[%s]" % __import__('sys').platform)

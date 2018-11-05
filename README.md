@@ -39,4 +39,4 @@ usage example:
 Ctrl+Q to leave terminal
 
 
-tests are made on : GNU/Linux & H3Droid, python 3.7.1rc1 and esp8266
+tests are made on : GNU/Linux & H3Droid, cpython 3.7.1 and esp8266 / esp32
