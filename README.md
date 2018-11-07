@@ -13,7 +13,9 @@ workflow is:
 
     let the board compute from the file it already has and reply with a missing/changed list on uart.
 
-    stupyde then drives ampy for you and only send changed/missing files, then reset the board and connect to REPL
+    stupyde then only send changed/missing files and reset the board and connect to REPL
+
+    note that on ESP32 you may need a soft reset ( ctrl+D ) at the prompt.
 
 
 ![Preview1](./screenshot_upcom.png)
@@ -25,7 +27,7 @@ requires a vt-100 terminal ( eg: mlterm for sixel support, terminator for tiling
 
 requires python3.7 ( for f-strings conversion with https://github.com/pmp-p/fstrings_helper ).
 
-requires ampy https://github.com/adafruit/ampy for talking to boards.
+~~requires ampy https://github.com/adafruit/ampy for talking to boards.~~
 
 everything else is bloat and will be kept optionnal.
 

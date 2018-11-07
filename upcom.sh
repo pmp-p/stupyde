@@ -8,8 +8,8 @@ AIO_EXIT=${AIO_EXIT:-$DEFAULT_AIO_EXIT}
 
 clear
 
-export AMPY_PORT=${1:-/dev/ttyUSB0}
 export WORKDIR=${WORKDIR:-$DEFAULT_WORKDIR}
+export AMPY_PORT=${1:-/dev/ttyUSB0}
 export AMPY_BAUD=${AMPY_BAUD:-115200}
 
 
