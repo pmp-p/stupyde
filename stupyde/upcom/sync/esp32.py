@@ -42,7 +42,6 @@ while fat:
                 except:
                     print("creating folder : ", mkd)
                     os.mkdir( mkd )
-            #print("having ENOENT with folder path ? then just retry again")
 
     if v != sha1(k):
         print('~',k)

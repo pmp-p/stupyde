@@ -42,10 +42,10 @@ while fat:
                 except:
                     print("creating folder : ", mkd)
                     os.mkdir( mkd )
-            Time.sleep(0.5)
-            #print("having ENOENT with folder path ? then just retry again")
 
     if v != sha1(k):
         print('~',k)
 
 print(sys.platform,'end update list',sep=' : ')
+__import__('gc').collect()
+print('\x06')

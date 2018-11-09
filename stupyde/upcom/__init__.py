@@ -6,6 +6,7 @@ ESP32 = 'ESP-32'
 
 ESP8266 = 'ESP-8266'
 
+
 def run(port,code, popen=True):
     from serial import Serial
     with Serial(port, 115200) as esp:
@@ -135,8 +136,7 @@ else:
 
         updates = []
 
-        if board == ESP32:
-            print()
+        if board in (ESP32,):
             code =  open(RUN_SCRIPT,'rb').read().decode('utf-8')
 
             for l in run(port, code ):

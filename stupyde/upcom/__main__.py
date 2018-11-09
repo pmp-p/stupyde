@@ -1,4 +1,4 @@
-print("UPCOM\n\nmicropython tool for ampy reachable boards, License MIT http://github.com/pmpp-p")
+print("UPCOM\n\nmicropython tool for UART reachable boards, License MIT http://github.com/pmpp-p")
 print("="*80,end="\n\n")
 
 
@@ -20,7 +20,7 @@ code="""
 __import__('machine').RTC().datetime({})
 try:
     use.aio.__class__.paused=True
-    
+
 except:
     pass
 print("[%s]" % __import__('sys').platform)
@@ -42,13 +42,30 @@ else:
     print('board not recognized or not running micropython')
     board = '?'
 
+#esp8266 may need serious ram purge before receiving more code
+if board == ESP8266:
+    code ="""
+__import__('gc').collect()
+for k in dir(__import__('builtins')):
+    try:delattr(__import__('builtins'),k)
+    except:pass
+for k in dir():
+    try:delattr(__import__(__name__),k)
+    except:pass
+__import__('sys').modules.clear()
+__import__('gc').collect()
+print("~ Free RAM :", __import__('gc').mem_free() )
+print('\x06')
+"""
+    for purge in run(port,code):
+        if purge.count('~'):
+            print(purge)
+
 
 #give time to aio for stopping
 Time.sleep( float( os.getenv('AIO_EXIT',0.5) ) )
 
-
 print(f" - Syncing board {board} for wordir [",SRC,"]" )
-
 
 upcom( __file__.rsplit('/',1)[0] + sync_script, board, port )
 

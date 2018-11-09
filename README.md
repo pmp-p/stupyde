@@ -27,7 +27,10 @@ requires a vt-100 terminal ( eg: mlterm for sixel support, terminator for tiling
 
 requires python3.7 ( for f-strings conversion with https://github.com/pmp-p/fstrings_helper ).
 
-~~requires ampy https://github.com/adafruit/ampy for talking to boards.~~
+ESP8266: requires ampy https://github.com/adafruit/ampy for talking to boards.
+
+ESP32 : no need for ampy
+
 
 everything else is bloat and will be kept optionnal.
 
