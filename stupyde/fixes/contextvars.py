@@ -32,4 +32,3 @@ class ContextVar:
         except AttributeError:
             raise LookupError(self)
 #FIXME: LookupError
-

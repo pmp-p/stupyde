@@ -63,8 +63,8 @@ init()
 del init, sys.modules['xpy']
 gc.collect()
 
-reboot = ld('k.reboot')
-with dlopen('k') as klib:
+reboot = ld('klib.reboot')
+with dlopen('klib') as klib:
     builtins.klib = klib
     builtins.Pin = klib.Pin
     builtins.fopen = klib.fopen

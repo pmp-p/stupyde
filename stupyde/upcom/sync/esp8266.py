@@ -4,9 +4,9 @@ import uos as os
 
 fat = %(fat)s
 
-def sha1(f,block=512):
+def sha256(f,block=512):
     import uhashlib,ubinascii
-    h = uhashlib.sha1()
+    h = uhashlib.sha256()
     if isinstance(f, str):
         try:
             f = open(f,'rb')
@@ -20,7 +20,6 @@ def sha1(f,block=512):
     if f:f.close()
     return ubinascii.hexlify(h.digest()).decode()
 
-print(sys.platform,'update list for source tree %(src)s :',sep=' : ')
 while fat:
     k,v = fat.popitem()
     if k.count('/'):
@@ -40,11 +39,10 @@ while fat:
                 try:
                     os.stat(mkd)
                 except:
-                    print("creating folder : ", mkd)
+                    print("Created :", mkd)
                     os.mkdir( mkd )
 
-    if v != sha1(k):
-        print('~',k)
+    if v!=sha256(k): print('~',k)
 
 print(sys.platform,'end update list',sep=' : ')
 __import__('gc').collect()

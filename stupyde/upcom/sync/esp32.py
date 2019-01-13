@@ -4,9 +4,9 @@ import uos as os
 
 fat = %(fat)s
 
-def sha1(f,block=512):
+def sha256(f,block=512):
     import uhashlib,ubinascii
-    h = uhashlib.sha1()
+    h = uhashlib.sha256()
     if isinstance(f, str):
         try:
             f = open(f,'rb')
@@ -43,7 +43,7 @@ while fat:
                     print("creating folder : ", mkd)
                     os.mkdir( mkd )
 
-    if v != sha1(k):
+    if v != sha256(k):
         print('~',k)
 
 print(sys.platform,'end update list',sep=' : ')

@@ -93,10 +93,10 @@ else:
     RUN_SCRIPT = TMP("fastupd.py")
     RESET_SCRIPT = TMP("fastboot.py")
 
-    def sha1(f,block=512):
+    def sha256(f,block=512):
         import hashlib as uhashlib
         import binascii as ubinascii
-        h = uhashlib.sha1()
+        h = uhashlib.sha256()
         if isinstance(f, str):
             try:
                 f = open(f, "rb")
@@ -112,24 +112,83 @@ else:
             f.close()
         return ubinascii.hexlify(h.digest()).decode()  # .lower()
 
+    def precompile(fat,mpy):
+        global SRC,MPY
+        path = ( '%s/tmp' % SRC).replace('//','/')
+        cache = '%s/mpy' % path
+        print(' - compiler cache is %s' % cache )
+
+        if not os.path.isdir(path):
+            os.mkdir(path)
+            with open( cache, 'wb') as f:
+                f.write( json.dumps( {} ).encode('utf-8') )
+
+        with open( cache, 'rb') as f:
+            old_fat = json.loads( f.read().decode('utf-8') )
+
+        for fn in list(fat.keys()):
+
+            if fn in ('boot.py','main.py','assets/repl.py'):
+                print(' * skipping %s *' % fn)
+                continue
+
+            dest = '{}/{}.mpy'.format(path, fat[fn] )
+            comp = ('./{} {}/{} -o {} >/dev/null'.format( MPY,SRC, fn , dest )).replace('//','/')
+
+            if os.system(comp):
+                print("\n\t^ error in <%s>" % fn)
+                print('_'*30)
+                print()
+                continue
+
+            #replace source by mpy = sha256 , add dest mpy name = tmp mpy file
+            fat.pop(fn)
+            fn = fn[:-2]+'mpy'
+            fat[fn] = sha256(dest)
+            mpy[fn] = dest
+
+    def compiled(fat, fn):
+        global SRC
+        path = ( '%s/tmp' % SRC).replace('//','/')
+        dest = '{}/{}.mpy'.format(path, fat[fn] )
+        if os.path.isfile(dest):
+            return dest
+        return ''
 
     def upcom(board_script, board, port):
 
+        global SRC,MPY
 
-
+        MPY = os.getenv('MPY',False)
 
         #file table for board to sum
         fat = {}
 
+        mpy = {}
+
+
         for fn in os.popen("find -L %s|grep .py$" % SRC).readlines():
-            fn = fn.strip()
-            fat[fn.rsplit( SRC, 1)[-1]] = sha1(fn)
+            fn = fn.strip('./ \n\r\t')
+            if not os.path.isfile(fn):
+                continue
+            if fn.endswith('.mpy'):
+                continue
+            if not fn.endswith('.py'):
+                continue
+
+            fat[fn.rsplit( SRC, 1)[-1]] = sha256(fn)
+
+        if MPY:
+            print("  -> will precompile files with %s" % MPY )
+            precompile(fat,mpy)
 
         print(' - Sending file table to board via {}'.format(RUN_SCRIPT) )
         with open(RUN_SCRIPT, "wb") as fastupd:
-            fat = open(board_script,'rb').read().decode('utf-8') % { 'fat': repr(fat), 'src': SRC }
+            source = open(board_script,'rb').read().decode('utf-8') % { 'fat': repr(fat), 'src': SRC }
 
-            fastupd.write( fat.encode('utf-8') )
+            fastupd.write( source.encode('utf-8') )
+
+
 
         print(f"\nBoard {board}@{port} will update for :")
         print("-----------------------\n\n")
@@ -162,18 +221,24 @@ else:
                 l = l.strip()
                 if l.startswith("~ "):
                     print('\t',l )
-                    updates.append(SRC + l.strip("~ "))
+                    l = l.strip('~ \r\n')
+                    updates.append(l)
                 else:
                     print(l)
 
-            Time.sleep(0.8)
+            Time.sleep(0.6)
             print()
             print('syncing files ...')
             for upd in updates:
-                dst = upd.rsplit( SRC, 1)[-1]
-                print(upd,' => ',dst)
-                os.system("ampy put %s /%s" % (upd,dst) )
-                Time.sleep(0.02)
+                dst = upd
+                if upd.endswith('.mpy'):
+                    upd =  mpy[upd]
+                    print('MPY=> ',dst)
+                    os.system("ampy put %s /%s" % (upd,dst) )
+                else:
+                    print(upd,' => ',dst)
+                    os.system("ampy put %s%s /%s" % (SRC,upd,dst) )
+                Time.sleep(0.01)
 
             print('\n\nAll files sent, reset Board ...')
             with open( RESET_SCRIPT,'wb') as f:
@@ -181,3 +246,11 @@ else:
             os.system('ampy run %s' % RESET_SCRIPT)
             Time.sleep(0.2)
 
+
+
+
+
+
+
+
+#

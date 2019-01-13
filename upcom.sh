@@ -25,6 +25,18 @@ if [[ $# -lt 1 ]]; then
     exit
 fi
 
+
+MPY=$(echo -n */micropython/mpy-cross/mpy-cross)
+
+if file $MPY 2>&1 >/dev/null
+then
+    export MPY
+    #echo will precompile source code with $MPY
+else
+    unset MPY
+fi
+
+
 #LTP=$(python3.7 -u -B -c "import time;tm=time.gmtime();tm = tm[0:3] + (0,) + tm[3:6] + (0,);print(tm)")
 # pausing asyncio loop on the board to get exclusive repl
 #cat >> $1 <<END
