@@ -10,16 +10,19 @@ ESP8266 = 'ESP-8266'
 def run(port,code, popen=True):
     from serial import Serial
     with Serial(port, 115200) as esp:
+        #esp.write('
         esp.write( b'\x01' )
         esp.write( bytes('code = %r\n' % code ,'latin1' ) )
         esp.write( b'exec(code,globals(),globals());print("\x06")\n' )
         esp.write( b'\x04\x02')
         esp.flush()
+
+        cdown = 5000
         if popen:
             Time.sleep(0.1)
             buf = []
             eot = False
-            while True:
+            while cdown:
                 incoming = esp.read(esp.in_waiting).decode('utf-8')
                 if incoming:
                     buf.append( incoming )
@@ -43,7 +46,10 @@ def run(port,code, popen=True):
                             yield ''.join( buf)
                         break
                 else:
+                    cdown -= 1
                     Time.sleep(0.001)
+            else:
+                print('timeout')
         esp.reset_input_buffer()
 
 
@@ -123,8 +129,12 @@ else:
             with open( cache, 'wb') as f:
                 f.write( json.dumps( {} ).encode('utf-8') )
 
-        with open( cache, 'rb') as f:
-            old_fat = json.loads( f.read().decode('utf-8') )
+        try:
+            with open( cache, 'rb') as f:
+                old_fat = json.loads( f.read().decode('utf-8') )
+        except FileNotFoundError:
+            #cache folder tmp/ content was erased
+            old_fat = {}
 
         for fn in list(fat.keys()):
 
@@ -188,10 +198,8 @@ else:
 
             fastupd.write( source.encode('utf-8') )
 
-
-
         print(f"\nBoard {board}@{port} will update for :")
-        print("-----------------------\n\n")
+        print("-" * 20,"\n\n")
 
         updates = []
 
@@ -217,6 +225,10 @@ else:
             [ run(port, "__import__('machine').reset()" , popen=False) ]
 
         else:
+            Time.sleep(1)
+            print("#FIXME: timeout here on bad reset ?")
+            Time.sleep(1)
+
             for l in os.popen("ampy run %s" % RUN_SCRIPT):
                 l = l.strip()
                 if l.startswith("~ "):
@@ -242,7 +254,10 @@ else:
 
             print('\n\nAll files sent, reset Board ...')
             with open( RESET_SCRIPT,'wb') as f:
-                f.write(b'''__import__('machine').reset()''')
+                f.write(b'''try:__import__('os').remove('/osdebug')
+except:pass
+__import__('machine').reset()
+''')
             os.system('ampy run %s' % RESET_SCRIPT)
             Time.sleep(0.2)
 

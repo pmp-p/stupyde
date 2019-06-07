@@ -1,6 +1,8 @@
-import sys
+import sys,gc
 import utime as Time
 import uos as os
+
+print('Begin update list', gc.mem_free() )
 
 fat = %(fat)s
 
@@ -44,6 +46,6 @@ while fat:
 
     if v!=sha256(k): print('~',k)
 
-print(sys.platform,'end update list',sep=' : ')
-__import__('gc').collect()
+gc.collect()
+print('End update list',sys.platform,gc.mem_free() )
 print('\x06')

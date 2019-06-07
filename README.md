@@ -3,6 +3,8 @@ studio-upython-ide, but KISS
 
 workflow is:
 
+    precompile source tree with mpy-cross ( except for boot/main )
+
     build hashmap (sha1) of your source tree.
 
     set date on board in case not using ntp.

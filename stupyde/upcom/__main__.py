@@ -15,54 +15,66 @@ tm=Time.gmtime()
 
 tm = tm[0:3] + (0,) + tm[3:6] + (0,)
 
+# cut asyncio / soc debug and sync time
 
 code="""
+import sys
+try:__import__("esp").osdebug(None)
+except:pass
+
 __import__('machine').RTC().datetime({})
+
 try:
-    use.aio.paused=True
+    aio.paused=True
 except:
-    pass
-print("[%s]" % __import__('sys').platform)
+    try:
+        __import__('asyncio').get_event_loop().close()
+    except:
+        try:
+            __import__('uasyncio').get_event_loop().close()
+        except:
+            pass
+
+print("[%s]" % sys.platform)
+
+import gc
+gc.collect()
+ram = gc.mem_free()
+print("~ Free RAM :", gc.mem_free() )
+print('\x06')
+if sys.platform=='esp8266':
+    open('/osdebug','wb').close()
+    __import__('machine').reset()
 """.format(tm)
 
+print()
+print("Use ctrl+c once or twice to force REPL if using hard asyncio loop or blocking read")
 
 for testboard in run(port,code):
+    if testboard.startswith('~'):
+        print(testboard)
+        break
 
     if testboard.count('[esp32]'):
         board= ESP32
         sync_script = '/sync/esp32.py'
-        break
+        #break
 
     elif testboard.count('[esp8266]'):
         board = ESP8266
         sync_script = '/sync/esp8266.py'
-        break
+        #break
 else:
-    print('board not recognized or not running micropython')
+    import sys
+    print('Error: board not recognized, not running micropython or busy looping', file=sys.stderr)
     board = '?'
+    raise SystemExit(1)
 
-#esp8266 may need serious ram purge before receiving more code
 if board == ESP8266:
-    code ="""
-__import__('gc').collect()
-for k in dir(__import__('builtins')):
-    try:delattr(__import__('builtins'),k)
-    except:pass
-for k in dir():
-    try:delattr(__import__(__name__),k)
-    except:pass
-__import__('sys').modules.clear()
-__import__('gc').collect()
-print("~ Free RAM :", __import__('gc').mem_free() )
-print('\x06')
-"""
-    for purge in run(port,code):
-        if purge.count('~'):
-            print(purge)
+    Time.sleep(2)
 
-
-#give time to aio for stopping
-Time.sleep( float( os.getenv('AIO_EXIT',0.5) ) )
+##give time to aio for stopping
+#Time.sleep( float( os.getenv('AIO_EXIT',0.5) ) )
 
 print(f" - Syncing board {board} for wordir [",SRC,"]" )
 
