@@ -17,7 +17,7 @@ if [[ $# -lt 1 ]]; then
     echo
     echo "Usage:"
     echo
-    echo "  AMPY_BAUD=${AMPY_BAUD} WORKDIR=somedir $0 serial-port [ <stty-options> ... ] ]"
+    echo "  AMPY_BAUD=${AMPY_BAUD} WORKDIR=somedir MPY=mpy-cross $0 serial-port [ <stty-options> ... ] ]"
     echo
     echo "  Example: WORKDIR=${WORKDIR} $0 ${AMPY_PORT}"
     echo
@@ -26,28 +26,19 @@ if [[ $# -lt 1 ]]; then
 fi
 
 
-MPY=$(echo -n */micropython/mpy-cross/mpy-cross)
+MPY=${MPY:-$(echo -n ./micropython/mpy-cross/mpy-cross)}
 
-if file $MPY 2>&1 >/dev/null
+
+if command -v $MPY
 then
     export MPY
     #echo will precompile source code with $MPY
 else
+    echo "Will not use precompiler"
     unset MPY
 fi
 
-
-#LTP=$(python3.7 -u -B -c "import time;tm=time.gmtime();tm = tm[0:3] + (0,) + tm[3:6] + (0,);print(tm)")
-# pausing asyncio loop on the board to get exclusive repl
-#cat >> $1 <<END
-#use.aio.__class__.paused=True;__import__('machine').RTC().datetime(${LTP})
-#END
-
-# adjust if you have a long exit loop
-#sleep $AIO_EXIT
-
 PYTHONPATH=$(dirname "$(realpath $0)"):$PYTHONPATH python3.7 -u -B -mstupyde.upcom
-
 
 # Exit when any command fails
 set -e

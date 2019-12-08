@@ -17,7 +17,7 @@ def run(port,code, popen=True):
         esp.write( b'\x04\x02')
         esp.flush()
 
-        cdown = 5000
+        cdown = 8000
         if popen:
             Time.sleep(0.1)
             buf = []
@@ -49,7 +49,7 @@ def run(port,code, popen=True):
                     cdown -= 1
                     Time.sleep(0.001)
             else:
-                print('timeout')
+                print('52: %s timeout to run cmd' % port)
         esp.reset_input_buffer()
 
 
@@ -143,7 +143,7 @@ else:
                 continue
 
             dest = '{}/{}.mpy'.format(path, fat[fn] )
-            comp = ('./{} {}/{} -o {} >/dev/null'.format( MPY,SRC, fn , dest )).replace('//','/')
+            comp = ('{} {}/{} -o {} >/dev/null'.format( MPY,SRC, fn , dest )).replace('//','/')
 
             if os.system(comp):
                 print("\n\t^ error in <%s>" % fn)
@@ -177,7 +177,7 @@ else:
         mpy = {}
 
 
-        for fn in os.popen("find -L %s|grep .py$" % SRC).readlines():
+        for fn in os.popen("find -L %s|grep .py$ |grep -v %s/local/" % (SRC,SRC) ).readlines():
             fn = fn.strip('./ \n\r\t')
             if not os.path.isfile(fn):
                 continue
@@ -186,7 +186,7 @@ else:
             if not fn.endswith('.py'):
                 continue
 
-            fat[fn.rsplit( SRC, 1)[-1]] = sha256(fn)
+            fat[fn.split( SRC, 1)[-1]] = sha256(fn)
 
         if MPY:
             print("  -> will precompile files with %s" % MPY )
@@ -211,18 +211,25 @@ else:
                 if l.startswith("~ "):
                     print('\t',l )
                     updates.append(SRC + l.strip("~ "))
-
-            Time.sleep(0.8)
+            Time.sleep(0.6)
             print()
+
             print('Syncing files ...')
+
             for upd in updates:
-                dst = upd.rsplit( SRC, 1)[-1]
+                print(upd)
+                dst = upd.split(SRC, 1)[-1]
+                if dst.endswith('.mpy'):
+                    upd =  mpy[dst]
+                    print('MPY=> ',dst)
+
                 cp(upd,dst,**{ 'port':port, '-v': True } )
 
                 #FIXME: wait ack from board like for run+popen
                 Time.sleep(0.1)
 
-            [ run(port, "__import__('machine').reset()" , popen=False) ]
+            Time.sleep(0.1)
+            [ run(port,  b"\x04\x02__import__('machine').reset()\n" , popen=False) ]
 
         else:
             Time.sleep(1)
@@ -240,6 +247,8 @@ else:
 
             Time.sleep(0.6)
             print()
+
+
             print('syncing files ...')
             for upd in updates:
                 dst = upd

@@ -28,6 +28,7 @@ try:
     aio.paused=True
 except:
     try:
+        use.lives=False
         __import__('asyncio').get_event_loop().close()
     except:
         try:
@@ -50,7 +51,9 @@ if sys.platform=='esp8266':
 print()
 print("Use ctrl+c once or twice to force REPL if using hard asyncio loop or blocking read")
 
-for testboard in run(port,code):
+board = '?'
+res =  list(run(port,code))
+for testboard in res:
     if testboard.startswith('~'):
         print(testboard)
         break
@@ -58,16 +61,18 @@ for testboard in run(port,code):
     if testboard.count('[esp32]'):
         board= ESP32
         sync_script = '/sync/esp32.py'
-        #break
+        break
 
     elif testboard.count('[esp8266]'):
         board = ESP8266
         sync_script = '/sync/esp8266.py'
-        #break
+        break
 else:
+    print("board not recognized", res)
+
+if board == "?":
     import sys
     print('Error: board not recognized, not running micropython or busy looping', file=sys.stderr)
-    board = '?'
     raise SystemExit(1)
 
 if board == ESP8266:
