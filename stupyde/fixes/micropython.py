@@ -5,7 +5,7 @@ import micropython
 self = micropython
 
 tasks = []
-def __getattr__(self,attr):
+def __getattr__(attr):
     return getattr(self,attr)
 
 
@@ -23,3 +23,9 @@ def schedule(fn,arg):
     assert isinstance(arg,int)
     tasks.append( (fn,arg,) )
 
+
+def mem_info():
+    return """mem: total=?, current=?, peak=?
+stack: ? out of ?
+GC: total: ?, used: ?, free: ?
+ No. of 1-blocks: ?, 2-blocks: ?, max blk sz: ?, max free sz: ?"""

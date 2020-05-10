@@ -22,7 +22,12 @@ import sys
 try:__import__("esp").osdebug(None)
 except:pass
 
-__import__('machine').RTC().datetime({})
+rtc = __import__('machine').RTC()
+dt = {}
+if hasattr(rtc,'datetime'):
+    rtc.datetime(dt)
+else:
+    rtc.init(dt)
 
 try:
     aio.paused=True
@@ -62,13 +67,17 @@ for testboard in res:
         board= ESP32
         sync_script = '/sync/esp32.py'
         break
+    elif testboard.count('[esp32_LoBo]'):
+        board= ESP32
+        sync_script = '/sync/esp32.py'
+        break
 
     elif testboard.count('[esp8266]'):
         board = ESP8266
         sync_script = '/sync/esp8266.py'
         break
 else:
-    print("board not recognized", res)
+    print("board not recognized, fingerprint :", ' '.join(res) )
 
 if board == "?":
     import sys
